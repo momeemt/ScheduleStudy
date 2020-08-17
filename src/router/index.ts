@@ -4,6 +4,8 @@ import Home from '../views/Home.vue'
 import AddTask from '../views/AddTask.vue'
 import Report from '../views/Report.vue'
 import Target from '../views/Target.vue'
+import AddTextbook from '../views/AddTextbook.vue'
+import Textbook from '../views/Textbook.vue'
 
 Vue.use(VueRouter)
 
@@ -17,6 +19,16 @@ const routes: Array<RouteConfig> = [
     path: '/addTask',
     name: 'AddTask',
     component: AddTask
+  },
+  {
+    path: '/addTextbook',
+    name: 'AddTextbook',
+    component: AddTextbook
+  },
+  {
+    path: '/textbook',
+    name: 'Textbook',
+    component: Textbook
   },
   {
     path: '/report',
