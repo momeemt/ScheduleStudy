@@ -9,16 +9,15 @@
           outlined
           dense
         ></v-text-field>
-        <v-btn-toggle
+        <v-select
           v-model="textbook.subjects"
+          :items="subjects"
           multiple
+          outlined
           dense
           mandatory
         >
-          <v-btn v-for="(value, key, index) in subjects" :key="index">
-            {{ value }}
-          </v-btn>
-        </v-btn-toggle>
+        </v-select>
         <v-text-field
           v-model="textbook.unit"
           label="単位"
@@ -53,6 +52,19 @@
               {{ value.progressAmount }}{{ value.unit }} / {{ value.allAmount }}{{ value.unit }} ({{ value.progressAmount / value.allAmount * 100 }}%)
             </v-list-item-subtitle>
           </v-list-item-content>
+          <v-list-item-action v-for="(subject, key) in value.subjects" :key="key">
+            <v-btn small ripple="false" elevation="0" color="indigo" class="white--text" rounded>
+              {{ subject }}
+            </v-btn>
+          </v-list-item-action>
+          <v-list-item-action>
+            <v-btn icon>
+              <v-icon
+                @click="removeTextbook(value._id)"
+                color="grey lighten-1"
+              >mdi-delete</v-icon>
+            </v-btn>
+          </v-list-item-action>
         </v-list-item>
       </v-list>
       <v-card-actions>
@@ -96,22 +108,22 @@ export default Vue.extend({
         allAmount: 0,
         progressAmount: 0
       },
-      subjects: {
-        Japanese: '現代文',
-        classicalJapanese: '古文',
-        classicalChinese: '漢文',
-        math1: '数学I',
-        mathA: '数学A',
-        math2: '数学II',
-        mathB: '数学B',
-        math3: '数学III',
-        advancedPhysics: '物理',
-        basicPhysics: '物理基礎',
-        advancedChemistry: '化学',
-        basicChemistry: '化学基礎',
-        EnglishCommunication: 'コミュニケーション英語',
-        EnglishExpression: '英語表現'
-      },
+      subjects: [
+        '現代文',
+        '古文',
+        '漢文',
+        '数学I',
+        '数学A',
+        '数学II',
+        '数学B',
+        '数学III',
+        '物理',
+        '物理基礎',
+        '化学',
+        '化学基礎',
+        'コミュニケーション英語',
+        '英語表現'
+      ],
       dialog: false,
       snackbar: false
     }
@@ -124,12 +136,32 @@ export default Vue.extend({
   methods: {
     saveTextbook () {
       this.addTextbook(this.textbook)
+      this.textbook = {
+        name: '',
+        subjects: [],
+        unit: 'ページ',
+        allAmount: 0,
+        progressAmount: 0
+      }
       this.snackbar = true
       this.dialog = false
     },
+    removeTextbook (id: string) {
+      this.deleteTextbook(id)
+    },
     ...mapActions('Textbooks', [
-      'addTextbook'
-    ])
+      'addTextbook',
+      'deleteTextbook'
+    ]),
+    removeAll () {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const Database = require('nedb')
+      const db = new Database({
+        filename: 'textbooks.db'
+      })
+      db.loadDatabase()
+      db.remove({}, { multi: true })
+    }
   }
 })
 </script>

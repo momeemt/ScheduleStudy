@@ -19,7 +19,7 @@ interface RootGettersInterface {
 }
 
 interface State {
-  textbooks: Array<Textbook>;
+  textbooks: object;
 }
 
 interface Textbook {
@@ -28,6 +28,7 @@ interface Textbook {
   unit: string;
   allAmount: number;
   progressAmount: number;
+  _id: string;
 }
 
 type Getters<S, G> = {
@@ -35,7 +36,7 @@ type Getters<S, G> = {
 }
 
 interface GettersInterface {
-  getTextbooks: Array<Textbook>;
+  getTextbooks: object;
 }
 
 type Mutations<S, M> = {
@@ -44,6 +45,7 @@ type Mutations<S, M> = {
 
 interface MutationsInterface {
   add: Textbook;
+  delete: string;
 }
 
 type Actions<S, A, G = {}, M = {}, RS = {}, RG = {}> = {
@@ -52,6 +54,7 @@ type Actions<S, A, G = {}, M = {}, RS = {}, RG = {}> = {
 
 interface ActionsInterface {
   addTextbook: Textbook;
+  deleteTextbook: string;
 }
 
 type Context<S, A, G, M, RS, RG> = {
@@ -67,11 +70,15 @@ type Commit<M> = <T extends keyof M>(type: T, payload?: M[T]) => void;
 type Dispatch<A> = <T extends keyof A>(type: T, payload?: A[T]) => any;
 
 const state: State = {
-  textbooks: []
+  textbooks: {}
 }
 
 db.find({}, (_: Error | null, docs: Array<Textbook>) => {
-  state.textbooks = docs
+  const textbooksObject: any = {}
+  for (const doc of docs) {
+    textbooksObject[doc._id] = doc
+  }
+  state.textbooks = textbooksObject
 })
 
 const getters: Getters<State, GettersInterface> = {
@@ -82,7 +89,10 @@ const getters: Getters<State, GettersInterface> = {
 
 const mutations: Mutations<State, MutationsInterface> = {
   add (state, payload) {
-    state.textbooks.push(payload)
+    Vue.set(state.textbooks, payload._id, payload)
+  },
+  delete (state, payload) {
+    Vue.delete(state.textbooks, payload)
   }
 }
 
@@ -99,9 +109,13 @@ const actions: Actions<
       if (error !== null) {
         console.error(error)
       }
-      console.log(newTextbook)
+      ctx.commit('add', newTextbook)
     })
-    ctx.commit('add', payload)
+  },
+  deleteTextbook (ctx, payload) {
+    console.log(payload)
+    db.remove({ _id: payload })
+    ctx.commit('delete', payload)
   }
 }
 
